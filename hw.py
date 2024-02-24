@@ -1,4 +1,3 @@
-
 from collections import UserDict
 
 class Field:
@@ -14,10 +13,10 @@ class Name(Field):
         
 class Phone(Field):
     def __init__(self, value):
-        super().__init__(value)
         if not self.is_valid_phone(value):
             raise ValueError("Invalid phone number format")
-    #Валідація формату (10 цифр)     
+        super().__init__(value)    
+    
     def is_valid_phone(self, phone):
         return len(phone) == 10 and phone.isdigit()
 
@@ -27,19 +26,23 @@ class Record:
         self.phones = []
     #Реалізація методу додавання телефону
     def add_phone(self, phone):
-        self.phones.append(phone)
+        self.phones.append(Phone(phone))
     #Реалізація методу видалення телефону
     def remove_phone(self, phone):
-        if phone in self.phones:
-            self.phones.remove(phone)
+        putin = self.find_phone(phone)
+        if putin in self.phones:
+            self.phones.remove(putin)
     #Реалізація методу редагування телефону
     def edit_phone(self, old_phone, new_phone):
-        if old_phone in self.phones:
-            index = self.phones.index(old_phone)
-            self.phones[index] = new_phone
+        getmanb = self.find_phone(old_phone) 
+        # index = self.phones.index(getmanb)
+        self.phones[self.phones.index(getmanb)] = Phone(new_phone)
     #Реалізація методу пошуку телефону
     def find_phone(self, phone):
-        return phone in self.phones
+        for pho in self.phones:
+            if phone == pho.value:
+                return pho
+        return None
        
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(str(p) for p in self.phones)}"
@@ -50,16 +53,47 @@ class AddressBook(UserDict):
         self.data[record.name.value] = record
     #Реалізація методу пошуку телефону за ім'ям in data
     def find(self, name):
-        for record in self.data.values():
-            if record.find_phone(name):
-                return record.name.value
-        return None
+        return self.data[name]
+
     #Реалізація методу видалення з data
     def delete(self, name):
         if name in self.data:
             del self.data[name]
-            return True
-        return False
+            
 
-#if __name__ == "__main__":
-    
+if __name__ == "__main__":
+    # Створення нової адресної книги
+    book = AddressBook()
+
+    # Створення запису для John
+    john_record = Record("John")
+    john_record.add_phone("1234567890")
+    john_record.add_phone("5555555555")
+
+    # Додавання запису John до адресної книги
+    book.add_record(john_record)
+
+    # Створення та додавання нового запису для Jane
+    jane_record = Record("Jane")
+    jane_record.add_phone("9876543210")
+    book.add_record(jane_record)
+
+    # Виведення всіх записів у книзі
+    for name, record in book.data.items():
+        print(record)
+
+    # Знаходження та редагування телефону для John
+    john = book.find("John")
+    john.edit_phone("1234567890","1112223333")
+
+    print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+
+    # Пошук конкретного телефону у записі John
+    found_phone = john.find_phone("5555555555")
+    print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
+
+    # Видалення запису Jane
+    book.delete("Jane")
+
+    for name, record in book.data.items():
+        print(record)
